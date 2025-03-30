@@ -1,3 +1,6 @@
+import os
+import random
+
 class PosicaoBarco():
     def __init__(self, linha, coluna):
         self.linha = linha
@@ -7,7 +10,8 @@ class PosicaoBarco():
         return f"{self.linha}{self.coluna}"
     
     def converte_indices(self):
-        coluna = ord(self.coluna) - 64
+        coluna = ord(self.coluna) - 65
+        self.linha -= 1
         return [self.linha, coluna]
     
     def pos_eh_valida(self, tamanho_tabuleiro):
@@ -26,23 +30,15 @@ class Navio():
         self.posicoes = []
         self.posicoes_atingidas = []
 
-    def posicionar(self, posicoes):
-        if len(posicoes) != self.tamanho:
-            print(f"O navio {self.nome} requer {self.tamanho} posições, mas {len(posicoes)} foram fornecidas.")
+    def posicionar(self, tabuleiro, linha: int, coluna: str, direcao: str) -> bool:
+        direcao = direcao.upper()
+        if not tabuleiro.adicionar_navio(self, linha, coluna, direcao):
             return False
-        
-        for pos in posicoes:
-            linha, coluna = pos
-            posicao_obj = PosicaoBarco(linha, coluna)
-            self.posicoes.append(posicao_obj)
+        self.posicoes = (linha, coluna)
         return True
     
-    def acertou_tiro(self, posicao_tiro):
-        for posicao in self.posicoes:
-            if posicao.linha == posicao_tiro[0] and posicao.coluna == posicao_tiro[1].upper():
-                    self.posicoes_atingidas.append((posicao_tiro[0], posicao_tiro[1]))
-                    return True
-        return False
+    def barco_acertado(self, linha, coluna):
+        self.posicoes_atingidas = (linha, coluna)
     
     def esta_afundando(self):
         if len(self.posicoes_atingidas) == self.tamanho:
@@ -62,35 +58,37 @@ class PortaAvioes(Navio):
 
 class Encouracado(Navio):
     def __init__(self):
-        super().__init__("Encouracado", 5)
+        super().__init__("Encouracado", 4)
 
 class Cruzador(Navio):
     def __init__(self):
-        super().__init__("Cruzador", 5)
+        super().__init__("Cruzador", 3)
 
 class Submarino(Navio):
     def __init__(self):
-        super().__init__("Submarino", 5)
+        super().__init__("Submarino", 2)
 
 class Destroyer(Navio):
     def __init__(self):
-        super().__init__("Destroyer", 5)
+        super().__init__("Destroyer", 1)
 
 class Tabuleiro:
-    def __init__(self, tiros, tamanho=10):
-        self.tiros = tiros
+    def __init__(self, tamanho=10):
         self.tamanho = tamanho
         self.tabuleiro_matriz = [[0 for _ in range(self.tamanho)] for _ in range(self.tamanho)]
     
-    def adicionar_navio(self, navio, linha, coluna, direcao):
-
+    def adicionar_navio(self, navio: Navio, linha: int, coluna: str, direcao: str) -> bool:
+        if not self.posicao_valida(navio, linha, coluna, direcao):
+            return False
+        direcao = direcao.upper()
         posicao = PosicaoBarco(linha, coluna)
         posicao_numeros = posicao.converte_indices()
         if navio.nome == 'PortaAvioes': caractere = 'P'
-        if navio.nome == 'Encouracado': caractere = 'E'
-        if navio.nome == 'Cruzador': caractere = 'C'
-        if navio.nome == 'Submarino': caractere = 'S'
-        if navio.nome == 'Destroyer': caractere = 'D'
+        elif navio.nome == 'Encouracado': caractere = 'E'
+        elif navio.nome == 'Cruzador': caractere = 'C'
+        elif navio.nome == 'Submarino': caractere = 'S'
+        elif navio.nome == 'Destroyer': caractere = 'D'
+
         if direcao == 'V':
             for i in range(navio.tamanho):
                 self.tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]] = caractere
@@ -100,8 +98,9 @@ class Tabuleiro:
             for i in range(navio.tamanho):
                 self.tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]] = caractere
                 posicao_numeros[1] = posicao_numeros[1]+1
+        return True
 
-    def posicao_valida(self, navio, linha, coluna, direcao):
+    def posicao_valida(self, navio, linha, coluna, direcao) -> bool:
         posicao = PosicaoBarco(linha, coluna)
         posicao_numeros = posicao.converte_indices()
 
@@ -111,43 +110,212 @@ class Tabuleiro:
         if direcao == 'V':
             for i in range(navio.tamanho):
                 posicao_numeros[0] = posicao_numeros[0]+1
-            if posicao_numeros[0] > self.tamanho-1:
+            if posicao_numeros[0] > self.tamanho or self.tabuleiro_matriz[posicao_numeros[0]-1][posicao_numeros[1]] != 0:
                 return False
             
         if direcao == 'H':
             for i in range(navio.tamanho):
                 posicao_numeros[1] = posicao_numeros[1]+1
-            if posicao_numeros[1] > self.tamanho-1:
+            if posicao_numeros[1] > self.tamanho or self.tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]-1] != 0:
                 return False
         return True
 
-    def registrar_tiro(self, navio, linha, coluna):
+    def registrar_tiro(self, linha, coluna):
         posicao = PosicaoBarco(linha, coluna)
         posicao_numeros = posicao.converte_indices()
 
-        if navio.acertou_tiro(posicao_numeros):
-            self.tabuleiro_matriz[linha][coluna] = "X"
-        else:
-            self.tabuleiro_matriz[linha][coluna] = '~'
-            
-    # def __str__(self):
-    #     for linha in self.tabuleiro_matriz:
-    #         print(*linha)
+        if self.tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]] != 0:
+            barco = self.tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]]
+            self.tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]] = 'X'
+            return barco
+        
+        self.tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]] = '~'
+        return 0
 
+class TabuleiroJogador(Tabuleiro):
+    def __init__(self, tamanho=10):
+        super().__init__(tamanho)
+    
+    def __str__(self):
+        coord_num = 1
+        tabuleiro_desenho = "    A   B   C   D   E   F   G   H   I   J\n"
+        tabuleiro_desenho += "  +---+---+---+---+---+---+---+---+---+---+\n"
+        for linha in self.tabuleiro_matriz:
+            tabuleiro_desenho += f"{coord_num}"
+            if coord_num != 10: tabuleiro_desenho += " "
+            for caractere in linha:
+                if caractere == 0:
+                    tabuleiro_desenho += "|   "
+                    continue
+                tabuleiro_desenho += f"| {caractere} "
+            tabuleiro_desenho += "|"
+            tabuleiro_desenho += "\n"
+            tabuleiro_desenho += "  +---+---+---+---+---+---+---+---+---+---+\n"
+            coord_num += 1
+        return tabuleiro_desenho
+    
+class TabuleiroInimigo(Tabuleiro):
+    def __init__(self, tamanho=10):
+        super().__init__(tamanho)
+
+    # def __str__(self):
+    #     coord_num = 1
+    #     tabuleiro_desenho = "    A   B   C   D   E   F   G   H   I   J\n"
+    #     tabuleiro_desenho += "  +---+---+---+---+---+---+---+---+---+---+\n"
+    #     for linha in self.tabuleiro_matriz:
+    #         tabuleiro_desenho += f"{coord_num}"
+    #         if coord_num != 10: tabuleiro_desenho += " "
+    #         for caractere in linha:
+    #             if caractere == '~' or caractere == 'X':
+    #                 tabuleiro_desenho += f"| {caractere} "
+    #                 continue
+    #             tabuleiro_desenho += "|   "
+
+    #         tabuleiro_desenho += "|"
+    #         tabuleiro_desenho += "\n"
+    #         tabuleiro_desenho += "  +---+---+---+---+---+---+---+---+---+---+\n"
+    #         coord_num += 1
+    #     return tabuleiro_desenho
+    def __str__(self):
+        coord_num = 1
+        tabuleiro_desenho = "    A   B   C   D   E   F   G   H   I   J\n"
+        tabuleiro_desenho += "  +---+---+---+---+---+---+---+---+---+---+\n"
+        for linha in self.tabuleiro_matriz:
+            tabuleiro_desenho += f"{coord_num}"
+            if coord_num != 10: tabuleiro_desenho += " "
+            for caractere in linha:
+                if caractere == 0:
+                    tabuleiro_desenho += "|   "
+                    continue
+                tabuleiro_desenho += f"| {caractere} "
+            tabuleiro_desenho += "|"
+            tabuleiro_desenho += "\n"
+            tabuleiro_desenho += "  +---+---+---+---+---+---+---+---+---+---+\n"
+            coord_num += 1
+        return tabuleiro_desenho
+
+def limpar_tela():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+def posiciona_navio(tabuleiro, navio):
+    print(f"Posicione o {navio.nome}:")
+    posicionou = False
+    while not posicionou:
+        direcao = input("Direcao(V/H): ")
+        coluna = input("Coluna: ")
+        linha = int(input("Linha: "))
+        posicionou = navio.posicionar(tabuleiro, linha, coluna, direcao)
+
+def posiciona_navio_inimigo(tabuleiro, navio):
+    print(f"Posicione o {navio.nome}:")
+    posicionou = False
+    while not posicionou:
+        direcao = random.randint(1,2)
+        if direcao == 1: direcao = 'V'
+        else: direcao = 'H'
+        coluna = chr(random.randint(65, 74))
+        linha = random.randint(1, 10)
+        posicionou = navio.posicionar(tabuleiro, linha, coluna, direcao)
+
+def print_tabuleiros(tabuleiro_jogador, tabuleiro_inimigo):
+    print("Tabuleiro Jogador: ")
+    print(tabuleiro_jogador)
+    print("Tabuleiro Inimgo: ")
+    print(tabuleiro_inimigo)
 
 #MAIN ------------------------------------------------------------------
+tabuleiro_jogador = TabuleiroJogador()
+tabuleiro_inimigo = TabuleiroInimigo()
 
-aaa = PortaAvioes()
+porta_avioes = PortaAvioes(); PA_afundado = False
+encouracado  = Encouracado(); EN_afundado = False
+cruzador     = Cruzador(); CR_afundado = False
+submarino    = Submarino(); SU_afundado = False
+destroyer    = Destroyer(); DE_afundado = False 
 
-aaa.posicionar(((3, 'b'), (3, 'c'), (3, 'd'), (3, 'e'), (3, 'f')))
+porta_avioes_inimigo = PortaAvioes(); PA_inimigo_afundado = False
+encouracado_inimigo  = Encouracado(); EN_inimigo_afundado = False
+cruzador_inimigo     = Cruzador(); CR_inimigo_afundado = False
+submarino_inimigo    = Submarino(); SU_inimigo_afundado = False
+destroyer_inimigo    = Destroyer(); DE_inimigo_afundado = False
 
-aaa.acertou_tiro((3, 'b'))
-aaa.acertou_tiro((3, 'c'))
-aaa.acertou_tiro((3, 'd'))
-aaa.acertou_tiro((3, 'e'))
-aaa.acertou_tiro((3, 'f'))
+comecar_jogo:str = input("Começar jogo?(Y/N): ")
+limpar_tela()
 
-if aaa.esta_afundando():
-    print("oi")
+if comecar_jogo.upper() == 'Y':
+    print_tabuleiros(tabuleiro_jogador, tabuleiro_inimigo)
+
+    posiciona_navio(tabuleiro_jogador, porta_avioes)
+    limpar_tela()
+    print_tabuleiros(tabuleiro_jogador, tabuleiro_inimigo)
+
+    posiciona_navio(tabuleiro_jogador, encouracado)
+    limpar_tela()
+    print_tabuleiros(tabuleiro_jogador, tabuleiro_inimigo)
+
+    posiciona_navio(tabuleiro_jogador, cruzador)
+    limpar_tela()
+    print_tabuleiros(tabuleiro_jogador, tabuleiro_inimigo)
+
+    posiciona_navio(tabuleiro_jogador, submarino)
+    limpar_tela()
+    print_tabuleiros(tabuleiro_jogador, tabuleiro_inimigo)
+
+    posiciona_navio(tabuleiro_jogador, destroyer)
+    limpar_tela()
+    print_tabuleiros(tabuleiro_jogador, tabuleiro_inimigo)
+
+    #inimigo
+    posiciona_navio_inimigo(tabuleiro_inimigo, porta_avioes_inimigo)
+    limpar_tela()
+    print_tabuleiros(tabuleiro_jogador, tabuleiro_inimigo)
+
+    posiciona_navio_inimigo(tabuleiro_inimigo, encouracado_inimigo)
+    limpar_tela()
+    print_tabuleiros(tabuleiro_jogador, tabuleiro_inimigo)
+
+    posiciona_navio_inimigo(tabuleiro_inimigo, cruzador_inimigo)
+    limpar_tela()
+    print_tabuleiros(tabuleiro_jogador, tabuleiro_inimigo)
+
+    posiciona_navio_inimigo(tabuleiro_inimigo, submarino_inimigo)
+    limpar_tela()
+    print_tabuleiros(tabuleiro_jogador, tabuleiro_inimigo)
+
+    posiciona_navio_inimigo(tabuleiro_inimigo, destroyer_inimigo)
+    limpar_tela()
+    print_tabuleiros(tabuleiro_jogador, tabuleiro_inimigo)
+
+    print("Escolha uma posição para atirar")
+    coluna = input("Coluna: ")
+    linha = int(input("Linha: "))
+    barco = tabuleiro_inimigo.registrar_tiro(linha, coluna)
+    print_tabuleiros(tabuleiro_jogador, tabuleiro_inimigo)
+    
+    if barco == 'P':
+        porta_avioes_inimigo.barco_acertado(linha, coluna)
+        if porta_avioes_inimigo.esta_afundando(): PA_inimigo_afundado = True
+
+    if barco == 'E':
+        encouracado_inimigo.barco_acertado(linha, coluna)
+        if encouracado_inimigo.esta_afundando(): EN_inimigo_afundado_afundado = True
+
+    if barco == 'C':
+        cruzador_inimigo.barco_acertado(linha, coluna)
+        if cruzador_inimigo.esta_afundando(): CR_inimigo_afundado = True
+
+    if barco == 'S':
+        submarino_inimigo.barco_acertado(linha, coluna)
+        if submarino_inimigo.esta_afundando(): SU_inimigo_afundado = True
+
+    if barco == 'D':
+        destroyer_inimigo.barco_acertado(linha, coluna)
+        if destroyer_inimigo.esta_afundando(): SU_inimigo_afundado = True
+    
+    if PA_inimigo_afundado and EN_inimigo_afundado and CR_inimigo_afundado and SU_inimigo_afundado and DE_inimigo_afundado:
+        limpar_tela()
+        print("FIM DE JOGO. VOCE GANHOU AFF")
+        exit(0)
 else:
-    print("oo")
+    print("Saindo...")
+    exit(0)
