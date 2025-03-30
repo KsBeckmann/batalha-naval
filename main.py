@@ -379,7 +379,7 @@ if comecar_jogo.upper() == 'Y':
         barco = "posicao_ja_jogada"
         while barco == "posicao_ja_jogada":
             coluna = chr(random.randint(65, 74))
-            linha = random.randint(0, 10)
+            linha = random.randint(1, 10)
             barco = tabuleiro_jogador.registrar_tiro(linha, coluna)
         limpar_tela()
         print_tabuleiros(tabuleiro_jogador, tabuleiro_inimigo)
