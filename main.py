@@ -3,7 +3,7 @@ from navios import PortaAvioes, Encouracado, Cruzador, Submarino, Destroyer
 from utils import limpar_tela, posiciona_navio, posiciona_navio_inimigo, print_tabuleiros
 import random
 
-def main():
+def main() -> None:
     tabuleiro_jogador = TabuleiroJogador()
     tabuleiro_inimigo = TabuleiroInimigo()
 
@@ -93,7 +93,6 @@ def main():
             SU_inimigo_afundado, DE_inimigo_afundado
         )
 
-        #inimigo
         posiciona_navio_inimigo(tabuleiro_inimigo, porta_avioes_inimigo)
         limpar_tela()
         print_tabuleiros(
@@ -143,15 +142,33 @@ def main():
             barco = "posicao_ja_jogada"
             while barco == "posicao_ja_jogada":
                 print("Escolha uma posição para atirar")
-                try: coluna = input("Coluna: ")
-                except: print("linha precisa ser uma letra..."); continue
-                coluna = coluna.upper()
-                if coluna > 'J' or coluna < 'A': continue
-
-                try: linha = int(input("Linha: "))
-                except: print("linha precisa ser um numero..."); continue
-                if linha > 10: continue
+                coluna_valida = False
+                while not coluna_valida:
+                    coluna_input = input("Coluna (A-J): ")
+                    if len(coluna_input) != 1:
+                        print("Por favor, digite apenas uma letra.")
+                        continue
+                    coluna = coluna_input.upper()
+                    if coluna < 'A' or coluna > 'J':
+                        print("Por favor, digite uma letra entre A e J.")
+                        continue
+                    coluna_valida = True
+                
+                linha_valida = False
+                while not linha_valida:
+                    try:
+                        linha = int(input("Linha (1-10): "))
+                        if linha < 1 or linha > 10:
+                            print("Por favor, digite um número entre 1 e 10.")
+                            continue
+                        linha_valida = True
+                    except ValueError:
+                        print("Por favor, digite um número válido.")
+                        continue
+                
                 barco = tabuleiro_inimigo.registrar_tiro(linha, coluna)
+                if barco == "posicao_ja_jogada":
+                    print("Você já atirou nessa posição. Tente outra.")
             
             limpar_tela()
             print_tabuleiros(
@@ -186,7 +203,6 @@ def main():
                 print("FIM DE JOGO. VOCE GANHOU AFF")
                 exit(0)
 
-            ############################################################################################################################
             barco = "posicao_ja_jogada"
             while barco == "posicao_ja_jogada":
                 coluna = chr(random.randint(65, 74))
@@ -228,7 +244,6 @@ def main():
     else:
         print("Saindo...")
         exit(0)
-
 
 if __name__ == "__main__":
     main()
