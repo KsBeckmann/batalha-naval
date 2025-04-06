@@ -1,19 +1,27 @@
 class PosicaoBarco:
     def __init__(self, linha: int, coluna: str) -> None:
-        self.linha = linha
-        self.coluna = coluna.upper()
+        self.__linha = linha
+        self.__coluna = coluna.upper()
+    
+    @property
+    def linha(self) -> int:
+        return self.__linha
+    
+    @property
+    def coluna(self) -> str:
+        return self.__coluna
     
     def __str__(self) -> str:
-        return f"{self.linha}{self.coluna}"
+        return f"{self.__linha}{self.__coluna}"
     
     def converte_indices(self) -> list[int]:
-        coluna = ord(self.coluna) - 65
-        self.linha -= 1
-        return [self.linha, coluna]
+        coluna = ord(self.__coluna) - 65
+        linha = self.__linha - 1
+        return [linha, coluna]
     
     def pos_eh_valida(self, tamanho_tabuleiro: int) -> bool:
-        if self.linha > tamanho_tabuleiro or self.linha <= 0:
+        if self.__linha > tamanho_tabuleiro or self.__linha <= 0:
             return False
-        if ord(self.coluna) - 64 > tamanho_tabuleiro or ord(self.coluna) - 64 <= 0:
+        if ord(self.__coluna) - 64 > tamanho_tabuleiro or ord(self.__coluna) - 64 <= 0:
             return False
         return True

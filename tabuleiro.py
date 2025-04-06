@@ -4,8 +4,12 @@ from navios import Navio
 
 class Tabuleiro:
     def __init__(self, tamanho: int = 10) -> None:
-        self.tamanho = tamanho
-        self.tabuleiro_matriz = [[0 for _ in range(self.tamanho)] for _ in range(self.tamanho)]
+        self.__tamanho = tamanho
+        self.__tabuleiro_matriz = [[0 for _ in range(self.__tamanho)] for _ in range(self.__tamanho)]
+    
+    @property
+    def tamanho(self) -> int:
+        return self.__tamanho
     
     def adicionar_navio(self, navio: Navio, linha: int, coluna: str, direcao: str) -> bool:
         if not self.posicao_valida(navio, linha, coluna, direcao):
@@ -22,11 +26,11 @@ class Tabuleiro:
 
         if direcao == 'V':
             for i in range(navio.tamanho):
-                self.tabuleiro_matriz[posicao_numeros[0]+i][posicao_numeros[1]] = caractere
+                self.__tabuleiro_matriz[posicao_numeros[0]+i][posicao_numeros[1]] = caractere
                 
         if direcao == 'H':
             for i in range(navio.tamanho):
-                self.tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]+i] = caractere
+                self.__tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]+i] = caractere
         return True
 
     def posicao_valida(self, navio: Navio, linha: int, coluna: str, direcao: str) -> bool:
@@ -39,13 +43,13 @@ class Tabuleiro:
         if direcao == 'V':
             for i in range(navio.tamanho):
                 posicao_numeros[0] = posicao_numeros[0]+1
-                if posicao_numeros[0] > self.tamanho or self.tabuleiro_matriz[posicao_numeros[0]-1][posicao_numeros[1]] != 0:
+                if posicao_numeros[0] > self.__tamanho or self.__tabuleiro_matriz[posicao_numeros[0]-1][posicao_numeros[1]] != 0:
                     return False
             
         if direcao == 'H':
             for i in range(navio.tamanho):
                 posicao_numeros[1] = posicao_numeros[1]+1
-                if posicao_numeros[1] > self.tamanho or self.tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]-1] != 0:
+                if posicao_numeros[1] > self.__tamanho or self.__tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]-1] != 0:
                     return False
         return True
 
@@ -53,17 +57,17 @@ class Tabuleiro:
         posicao = PosicaoBarco(linha, coluna)
         posicao_numeros = posicao.converte_indices()
 
-        if self.tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]] == '~':
+        if self.__tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]] == '~':
             return "posicao_ja_jogada"
-        if self.tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]] == 'X':
+        if self.__tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]] == 'X':
             return "posicao_ja_jogada"
 
-        if self.tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]] != 0:
-            barco = self.tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]]
-            self.tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]] = 'X'
+        if self.__tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]] != 0:
+            barco = self.__tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]]
+            self.__tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]] = 'X'
             return barco
         
-        self.tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]] = '~'
+        self.__tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]] = '~'
         return 0
 
 class TabuleiroJogador(Tabuleiro):
@@ -74,7 +78,7 @@ class TabuleiroJogador(Tabuleiro):
         coord_num = 1
         tabuleiro_desenho = "    A   B   C   D   E   F   G   H   I   J\n"
         tabuleiro_desenho += "  +---+---+---+---+---+---+---+---+---+---+\n"
-        for linha in self.tabuleiro_matriz:
+        for linha in self._Tabuleiro__tabuleiro_matriz:
             tabuleiro_desenho += f"{coord_num}"
             if coord_num != 10: tabuleiro_desenho += " "
             for caractere in linha:
@@ -96,7 +100,7 @@ class TabuleiroInimigo(Tabuleiro):
         coord_num = 1
         tabuleiro_desenho = "    A   B   C   D   E   F   G   H   I   J\n"
         tabuleiro_desenho += "  +---+---+---+---+---+---+---+---+---+---+\n"
-        for linha in self.tabuleiro_matriz:
+        for linha in self._Tabuleiro__tabuleiro_matriz:
             tabuleiro_desenho += f"{coord_num}"
             if coord_num != 10: tabuleiro_desenho += " "
             for caractere in linha:
