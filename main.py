@@ -4,6 +4,9 @@ from utils import limpar_tela, posiciona_navio, posiciona_navio_inimigo, print_t
 import random
 
 def main() -> None:
+    comecar_jogo = input("Começar jogo?(Y/N): ")
+    limpar_tela()
+
     tabuleiro_jogador = TabuleiroJogador()
     tabuleiro_inimigo = TabuleiroInimigo()
 
@@ -37,8 +40,8 @@ def main() -> None:
     destroyer_inimigo = Destroyer()
     DE_inimigo_afundado = False
 
-    comecar_jogo = input("Começar jogo?(Y/N): ")
-    limpar_tela()
+    barcos_jogador = [porta_avioes, encouracado, cruzador, submarino, destroyer]
+    barcos_inimigo = [porta_avioes_inimigo, encouracado_inimigo, cruzador_inimigo, submarino_inimigo, destroyer_inimigo]
 
     if comecar_jogo.upper() == 'Y':
         print_tabuleiros(
@@ -139,8 +142,8 @@ def main() -> None:
         )
 
         while(True):
-            barco = "posicao_ja_jogada"
-            while barco == "posicao_ja_jogada":
+            barco_inimigo = "posicao_ja_jogada"
+            while barco_inimigo == "posicao_ja_jogada":
                 print("Escolha uma posição para atirar")
                 coluna_valida = False
                 while not coluna_valida:
@@ -166,8 +169,8 @@ def main() -> None:
                         print("Por favor, digite um número válido.")
                         continue
                 
-                barco = tabuleiro_inimigo.registrar_tiro(linha, coluna)
-                if barco == "posicao_ja_jogada":
+                barco_inimigo = tabuleiro_inimigo.registrar_tiro(linha, coluna, barcos_inimigo)
+                if barco_inimigo == "posicao_ja_jogada":
                     print("Você já atirou nessa posição. Tente outra.")
             
             limpar_tela()
@@ -178,23 +181,23 @@ def main() -> None:
                 SU_inimigo_afundado, DE_inimigo_afundado
             )
             
-            if barco == 'P':
+            if barco_inimigo == 'P':
                 porta_avioes_inimigo.barco_acertado(linha, coluna)
                 if porta_avioes_inimigo.esta_afundando(): PA_inimigo_afundado = True
 
-            if barco == 'E':
+            if barco_inimigo == 'E':
                 encouracado_inimigo.barco_acertado(linha, coluna)
                 if encouracado_inimigo.esta_afundando(): EN_inimigo_afundado = True
 
-            if barco == 'C':
+            if barco_inimigo == 'C':
                 cruzador_inimigo.barco_acertado(linha, coluna)
                 if cruzador_inimigo.esta_afundando(): CR_inimigo_afundado = True
 
-            if barco == 'S':
+            if barco_inimigo == 'S':
                 submarino_inimigo.barco_acertado(linha, coluna)
                 if submarino_inimigo.esta_afundando(): SU_inimigo_afundado = True
 
-            if barco == 'D':
+            if barco_inimigo == 'D':
                 destroyer_inimigo.barco_acertado(linha, coluna)
                 if destroyer_inimigo.esta_afundando(): DE_inimigo_afundado = True
             
@@ -203,11 +206,11 @@ def main() -> None:
                 print("FIM DE JOGO. VOCE GANHOU AFF")
                 exit(0)
 
-            barco = "posicao_ja_jogada"
-            while barco == "posicao_ja_jogada":
+            barco_jogador = "posicao_ja_jogada"
+            while barco_jogador == "posicao_ja_jogada":
                 coluna = chr(random.randint(65, 74))
                 linha = random.randint(1, 10)
-                barco = tabuleiro_jogador.registrar_tiro(linha, coluna)
+                barco_jogador = tabuleiro_jogador.registrar_tiro(linha, coluna, barcos_inimigo)
             limpar_tela()
             print_tabuleiros(
                 tabuleiro_jogador, tabuleiro_inimigo,
@@ -216,24 +219,29 @@ def main() -> None:
                 SU_inimigo_afundado, DE_inimigo_afundado
             )
 
-            if barco == 'P':
+            if barco_inimigo == "barco_defendeu":
+                print("Barco inimigo defendeu 😂🤏🤣🤏")
+            if barco_jogador == "barco_defendeu":
+                print("O seu barco defendeu 😷🤒🤮😴")
+
+            if barco_jogador == 'P':
                 porta_avioes.barco_acertado(linha, coluna)
                 if porta_avioes.esta_afundando():
                     PA_afundado = True
 
-            if barco == 'E':
+            if barco_jogador == 'E':
                 encouracado.barco_acertado(linha, coluna)
                 if encouracado.esta_afundando(): EN_afundado = True
 
-            if barco == 'C':
+            if barco_jogador == 'C':
                 cruzador.barco_acertado(linha, coluna)
                 if cruzador.esta_afundando(): CR_afundado = True
 
-            if barco == 'S':
+            if barco_jogador == 'S':
                 submarino.barco_acertado(linha, coluna)
                 if submarino.esta_afundando(): SU_afundado = True
 
-            if barco == 'D':
+            if barco_jogador == 'D':
                 destroyer.barco_acertado(linha, coluna)
                 if destroyer.esta_afundando(): DE_afundado = True
             

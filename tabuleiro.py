@@ -11,6 +11,10 @@ class Tabuleiro:
     def tamanho(self) -> int:
         return self.__tamanho
     
+    @property
+    def matriz(self) -> list:
+        return [linha.copy() for linha in self.__tabuleiro_matriz]
+
     def adicionar_navio(self, navio: Navio, linha: int, coluna: str, direcao: str) -> bool:
         if not self.posicao_valida(navio, linha, coluna, direcao):
             return False
@@ -53,9 +57,10 @@ class Tabuleiro:
                     return False
         return True
 
-    def registrar_tiro(self, linha: int, coluna: str) -> Union[Literal['P','E','C','S','D'], Literal[0], Literal['posicao_ja_jogada']]:
+    def registrar_tiro(self, linha: int, coluna: str, barcos_vetor: list) -> Union[Literal['P','E','C','S','D'], Literal[0], Literal['posicao_ja_jogada']]:
         posicao = PosicaoBarco(linha, coluna)
         posicao_numeros = posicao.converte_indices()
+        caracteres_barcos = ['P','E','C','S','D']
 
         if self.__tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]] == '~':
             return "posicao_ja_jogada"
@@ -63,22 +68,23 @@ class Tabuleiro:
             return "posicao_ja_jogada"
 
         if self.__tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]] != 0:
-            barco = self.__tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]]
+            barco_atingido = self.__tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]]
+            for i in range(0,5):
+                if caracteres_barcos[i] == barco_atingido:
+                    if barcos_vetor[i].escudo_ativo():
+                        return "barco_defendeu"
             self.__tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]] = 'X'
-            return barco
+            return barco_atingido
         
         self.__tabuleiro_matriz[posicao_numeros[0]][posicao_numeros[1]] = '~'
         return 0
 
 class TabuleiroJogador(Tabuleiro):
-    def __init__(self, tamanho: int = 10) -> None:
-        super().__init__(tamanho)
-    
     def __str__(self) -> str:
         coord_num = 1
         tabuleiro_desenho = "    A   B   C   D   E   F   G   H   I   J\n"
         tabuleiro_desenho += "  +---+---+---+---+---+---+---+---+---+---+\n"
-        for linha in self._Tabuleiro__tabuleiro_matriz:
+        for linha in self.matriz:
             tabuleiro_desenho += f"{coord_num}"
             if coord_num != 10: tabuleiro_desenho += " "
             for caractere in linha:
@@ -93,14 +99,11 @@ class TabuleiroJogador(Tabuleiro):
         return tabuleiro_desenho
     
 class TabuleiroInimigo(Tabuleiro):
-    def __init__(self, tamanho: int = 10) -> None:
-        super().__init__(tamanho)
-
     def __str__(self) -> str:
         coord_num = 1
         tabuleiro_desenho = "    A   B   C   D   E   F   G   H   I   J\n"
         tabuleiro_desenho += "  +---+---+---+---+---+---+---+---+---+---+\n"
-        for linha in self._Tabuleiro__tabuleiro_matriz:
+        for linha in self.matriz:
             tabuleiro_desenho += f"{coord_num}"
             if coord_num != 10: tabuleiro_desenho += " "
             for caractere in linha:
@@ -108,9 +111,26 @@ class TabuleiroInimigo(Tabuleiro):
                     tabuleiro_desenho += f"| {caractere} "
                     continue
                 tabuleiro_desenho += "|   "
-
             tabuleiro_desenho += "|"
             tabuleiro_desenho += "\n"
             tabuleiro_desenho += "  +---+---+---+---+---+---+---+---+---+---+\n"
             coord_num += 1
         return tabuleiro_desenho
+
+    # def __str__(self) -> str:
+    #     coord_num = 1
+    #     tabuleiro_desenho = "    A   B   C   D   E   F   G   H   I   J\n"
+    #     tabuleiro_desenho += "  +---+---+---+---+---+---+---+---+---+---+\n"
+    #     for linha in self.matriz:
+    #         tabuleiro_desenho += f"{coord_num}"
+    #         if coord_num != 10: tabuleiro_desenho += " "
+    #         for caractere in linha:
+    #             if caractere == 0:
+    #                 tabuleiro_desenho += "|   "
+    #                 continue
+    #             tabuleiro_desenho += f"| {caractere} "
+    #         tabuleiro_desenho += "|"
+    #         tabuleiro_desenho += "\n"
+    #         tabuleiro_desenho += "  +---+---+---+---+---+---+---+---+---+---+\n"
+    #         coord_num += 1
+    #     return tabuleiro_desenho
