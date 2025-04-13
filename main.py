@@ -233,7 +233,7 @@ def main() -> None:
                 # Gera posição aleatória para o tiro do computador
                 coluna = chr(random.randint(65, 74))  # ASCII: A=65, J=74
                 linha = random.randint(1, 10)
-                barco_jogador = tabuleiro_jogador.registrar_tiro(linha, coluna, barcos_inimigo)
+                barco_jogador = tabuleiro_jogador.registrar_tiro(linha, coluna, barcos_jogador)
             
             # Atualiza a visualização após o tiro do computador
             limpar_tela()
