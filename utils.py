@@ -5,12 +5,24 @@ from tabuleiro import Tabuleiro
 from navios import Navio
 
 def limpar_tela() -> None:
+    """
+    Limpa o terminal/console.
+    Usa 'cls' no Windows e 'clear' em sistemas Unix/Linux.
+    """
     os.system('cls' if os.name == 'nt' else 'clear')
 
 def posiciona_navio(tabuleiro: Tabuleiro, navio: Navio) -> None:
+    """
+    Função para posicionar um navio no tabuleiro com entrada do usuário.
+    
+    Args:
+        tabuleiro: O tabuleiro onde o navio será posicionado
+        navio: O navio a ser posicionado
+    """
     print(f"Posicione o {navio.nome}({navio.tamanho}):")
     posicionou = False  
     while not posicionou:
+        # Solicita a direção do navio (vertical ou horizontal)
         direcao_valida = False
         while not direcao_valida:
             direcao_input = input("Direcao(V/H): ")
@@ -20,6 +32,7 @@ def posiciona_navio(tabuleiro: Tabuleiro, navio: Navio) -> None:
                 continue
             direcao_valida = True
         
+        # Solicita a coluna (A-J)
         coluna_valida = False
         while not coluna_valida:
             coluna_input = input("Coluna (A-J): ")
@@ -32,6 +45,7 @@ def posiciona_navio(tabuleiro: Tabuleiro, navio: Navio) -> None:
                 continue
             coluna_valida = True
         
+        # Solicita a linha (1-10)
         linha_valida = False
         while not linha_valida:
             try:
@@ -44,18 +58,31 @@ def posiciona_navio(tabuleiro: Tabuleiro, navio: Navio) -> None:
                 print("Por favor, digite um número válido.")
                 continue
         
+        # Tenta posicionar o navio
         posicionou = navio.posicionar(tabuleiro, linha, coluna, direcao)
         if not posicionou:
             print("Não foi possível posicionar o navio nessa posição. Tente novamente.")
 
 def posiciona_navio_inimigo(tabuleiro: Tabuleiro, navio: Navio) -> None:
+    """
+    Função para posicionar automaticamente um navio no tabuleiro inimigo.
+    
+    Args:
+        tabuleiro: O tabuleiro onde o navio será posicionado
+        navio: O navio a ser posicionado
+    """
     posicionou = False
     while not posicionou:
+        # Gera direção aleatória
         direcao = random.randint(1,2)
         if direcao == 1: direcao = 'V'
         else: direcao = 'H'
-        coluna = chr(random.randint(65, 74))
+        
+        # Gera posição aleatória (A-J, 1-10)
+        coluna = chr(random.randint(65, 74))  # ASCII: A=65, J=74
         linha = random.randint(1, 10)
+        
+        # Tenta posicionar o navio
         posicionou = navio.posicionar(tabuleiro, linha, coluna, direcao)
 
 def print_tabuleiros(tabuleiro_jogador, 
@@ -70,6 +97,16 @@ def print_tabuleiros(tabuleiro_jogador,
                     CR_inimigo_afundado: bool, 
                     SU_inimigo_afundado: bool, 
                     DE_inimigo_afundado: bool) -> None:
+    """
+    Exibe os tabuleiros do jogador e do inimigo, junto com o status de navios afundados.
+    
+    Args:
+        tabuleiro_jogador: Tabuleiro do jogador
+        tabuleiro_inimigo: Tabuleiro do inimigo
+        PA_afundado, EN_afundado, etc.: Status de afundamento dos navios do jogador
+        PA_inimigo_afundado, EN_inimigo_afundado, etc.: Status de afundamento dos navios do inimigo
+    """
+    # Exibe o tabuleiro do jogador e navios afundados
     print("Tabuleiro Jogador: ")
     print("Navios afundados: ", end="")
     if PA_afundado: print("Porta-Avioes(5) ", end="")
@@ -79,6 +116,8 @@ def print_tabuleiros(tabuleiro_jogador,
     if DE_afundado: print("Destroyer(1) ", end="")
     print("")
     print(tabuleiro_jogador)
+    
+    # Exibe o tabuleiro do inimigo e navios afundados
     print("Tabuleiro Inimgo: ")
     print("Navios afundados: ", end="")
     if PA_inimigo_afundado: print("Porta-Avioes(5) ", end="")

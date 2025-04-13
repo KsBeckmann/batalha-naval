@@ -4,12 +4,19 @@ from utils import limpar_tela, posiciona_navio, posiciona_navio_inimigo, print_t
 import random
 
 def main() -> None:
+    """
+    Função principal do jogo de Batalha Naval.
+    Gerencia o fluxo do jogo, desde a inicialização até a condição de vitória ou derrota.
+    """
+    # Pergunta se o jogador quer iniciar o jogo
     comecar_jogo = input("Começar jogo?(Y/N): ")
     limpar_tela()
 
+    # Inicializa os tabuleiros
     tabuleiro_jogador = TabuleiroJogador()
     tabuleiro_inimigo = TabuleiroInimigo()
 
+    # Inicializa os navios do jogador
     porta_avioes = PortaAvioes()
     PA_afundado = False
 
@@ -25,6 +32,7 @@ def main() -> None:
     destroyer = Destroyer()
     DE_afundado = False
 
+    # Inicializa os navios do inimigo
     porta_avioes_inimigo = PortaAvioes()
     PA_inimigo_afundado = False
 
@@ -40,10 +48,12 @@ def main() -> None:
     destroyer_inimigo = Destroyer()
     DE_inimigo_afundado = False
 
+    # Agrupa os navios em listas para facilitar o acesso
     barcos_jogador = [porta_avioes, encouracado, cruzador, submarino, destroyer]
     barcos_inimigo = [porta_avioes_inimigo, encouracado_inimigo, cruzador_inimigo, submarino_inimigo, destroyer_inimigo]
 
     if comecar_jogo.upper() == 'Y':
+        # Exibe os tabuleiros iniciais
         print_tabuleiros(
             tabuleiro_jogador, tabuleiro_inimigo,
             PA_afundado, EN_afundado, CR_afundado, SU_afundado, DE_afundado,
@@ -51,6 +61,7 @@ def main() -> None:
             SU_inimigo_afundado, DE_inimigo_afundado
         )
 
+        # Fase de posicionamento: jogador posiciona seus navios
         posiciona_navio(tabuleiro_jogador, porta_avioes)
         limpar_tela()
         print_tabuleiros(
@@ -96,6 +107,7 @@ def main() -> None:
             SU_inimigo_afundado, DE_inimigo_afundado
         )
 
+        # Fase de posicionamento: computador posiciona seus navios aleatoriamente
         posiciona_navio_inimigo(tabuleiro_inimigo, porta_avioes_inimigo)
         limpar_tela()
         print_tabuleiros(
@@ -141,10 +153,14 @@ def main() -> None:
             SU_inimigo_afundado, DE_inimigo_afundado
         )
 
+        # Loop principal do jogo
         while(True):
+            # Vez do jogador
             barco_inimigo = "posicao_ja_jogada"
             while barco_inimigo == "posicao_ja_jogada":
                 print("Escolha uma posição para atirar")
+                
+                # Solicita a coluna para o tiro
                 coluna_valida = False
                 while not coluna_valida:
                     coluna_input = input("Coluna (A-J): ")
@@ -157,6 +173,7 @@ def main() -> None:
                         continue
                     coluna_valida = True
                 
+                # Solicita a linha para o tiro
                 linha_valida = False
                 while not linha_valida:
                     try:
@@ -169,10 +186,12 @@ def main() -> None:
                         print("Por favor, digite um número válido.")
                         continue
                 
+                # Registra o tiro no tabuleiro inimigo
                 barco_inimigo = tabuleiro_inimigo.registrar_tiro(linha, coluna, barcos_inimigo)
                 if barco_inimigo == "posicao_ja_jogada":
                     print("Você já atirou nessa posição. Tente outra.")
             
+            # Atualiza a visualização após o tiro do jogador
             limpar_tela()
             print_tabuleiros(
                 tabuleiro_jogador, tabuleiro_inimigo,
@@ -181,6 +200,7 @@ def main() -> None:
                 SU_inimigo_afundado, DE_inimigo_afundado
             )
             
+            # Verifica e atualiza o estado dos navios inimigos
             if barco_inimigo == 'P':
                 porta_avioes_inimigo.barco_acertado(linha, coluna)
                 if porta_avioes_inimigo.esta_afundando(): PA_inimigo_afundado = True
@@ -201,16 +221,21 @@ def main() -> None:
                 destroyer_inimigo.barco_acertado(linha, coluna)
                 if destroyer_inimigo.esta_afundando(): DE_inimigo_afundado = True
             
+            # Verifica condição de vitória do jogador (todos os navios inimigos afundados)
             if PA_inimigo_afundado and EN_inimigo_afundado and CR_inimigo_afundado and SU_inimigo_afundado and DE_inimigo_afundado:
                 limpar_tela()
                 print("FIM DE JOGO. VOCE GANHOU AFF")
                 exit(0)
 
+            # Vez do computador (tiros aleatórios)
             barco_jogador = "posicao_ja_jogada"
             while barco_jogador == "posicao_ja_jogada":
-                coluna = chr(random.randint(65, 74))
+                # Gera posição aleatória para o tiro do computador
+                coluna = chr(random.randint(65, 74))  # ASCII: A=65, J=74
                 linha = random.randint(1, 10)
                 barco_jogador = tabuleiro_jogador.registrar_tiro(linha, coluna, barcos_inimigo)
+            
+            # Atualiza a visualização após o tiro do computador
             limpar_tela()
             print_tabuleiros(
                 tabuleiro_jogador, tabuleiro_inimigo,
@@ -219,11 +244,13 @@ def main() -> None:
                 SU_inimigo_afundado, DE_inimigo_afundado
             )
 
+            # Exibe mensagens sobre escudos ativados
             if barco_inimigo == "barco_defendeu":
                 print("Barco inimigo defendeu 😂🤏🤣🤏")
             if barco_jogador == "barco_defendeu":
                 print("O seu barco defendeu 😷🤒🤮😴")
 
+            # Verifica e atualiza o estado dos navios do jogador
             if barco_jogador == 'P':
                 porta_avioes.barco_acertado(linha, coluna)
                 if porta_avioes.esta_afundando():
@@ -245,6 +272,7 @@ def main() -> None:
                 destroyer.barco_acertado(linha, coluna)
                 if destroyer.esta_afundando(): DE_afundado = True
             
+            # Verifica condição de derrota do jogador (todos os navios do jogador afundados)
             if PA_afundado and EN_afundado and CR_afundado and SU_afundado and DE_afundado:
                 limpar_tela()
                 print("FIM DE JOGO. VOCE PERDEU KKKKKKKKKKKKKKKK")
