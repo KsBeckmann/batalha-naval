@@ -2,6 +2,8 @@ from tabuleiro import TabuleiroJogador, TabuleiroInimigo
 from navios import PortaAvioes, Encouracado, Cruzador, Submarino, Destroyer
 from utils import limpar_tela, posiciona_navio, posiciona_navio_inimigo, print_tabuleiros
 import random
+from audio import Audio
+import time
 
 def main() -> None:
     """
@@ -9,6 +11,7 @@ def main() -> None:
     Gerencia o fluxo do jogo, desde a inicialização até a condição de vitória ou derrota.
     """
     # Pergunta se o jogador quer iniciar o jogo
+    limpar_tela()
     comecar_jogo = input("Começar jogo?(Y/N): ")
     limpar_tela()
 
@@ -187,9 +190,18 @@ def main() -> None:
                         continue
                 
                 # Registra o tiro no tabuleiro inimigo
+                Audio.tocar_efeito('tiro')
+                time.sleep(1.0)
                 barco_inimigo = tabuleiro_inimigo.registrar_tiro(linha, coluna, barcos_inimigo)
                 if barco_inimigo == "posicao_ja_jogada":
                     print("Você já atirou nessa posição. Tente outra.")
+                elif barco_inimigo == 0:
+                    Audio.tocar_efeito('erro')
+                elif barco_inimigo in ['P', 'E', 'C', 'S', 'D']:
+                    Audio.tocar_efeito('acerto')
+                elif barco_inimigo == 'barco_defendeu':
+                    Audio.tocar_efeito('escudo')
+
             
             # Atualiza a visualização após o tiro do jogador
             limpar_tela()
