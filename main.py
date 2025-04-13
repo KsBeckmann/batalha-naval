@@ -237,6 +237,7 @@ def main() -> None:
             if PA_inimigo_afundado and EN_inimigo_afundado and CR_inimigo_afundado and SU_inimigo_afundado and DE_inimigo_afundado:
                 limpar_tela()
                 print("FIM DE JOGO. VOCE GANHOU AFF")
+                time.sleep(10.0)
                 exit(0)
 
             # Vez do computador (tiros aleatórios)
@@ -288,6 +289,7 @@ def main() -> None:
             if PA_afundado and EN_afundado and CR_afundado and SU_afundado and DE_afundado:
                 limpar_tela()
                 print("FIM DE JOGO. VOCE PERDEU KKKKKKKKKKKKKKKK")
+                time.sleep(10.0)
                 exit(0)
     else:
         print("Saindo...")
